@@ -1,0 +1,13 @@
+cradle:
+  stack:
+    - path: "./src"
+      component: "Coconut:lib"
+
+    - path: "./app/Main.hs"
+      component: "Coconut:exe:Coconut-exe"
+
+    - path: "./app/Paths_Coconut.hs"
+      component: "Coconut:exe:Coconut-exe"
+
+    - path: "./test"
+      component: "Coconut:test:Coconut-test"

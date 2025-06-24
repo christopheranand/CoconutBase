@@ -1,0 +1,40 @@
+digraph G {
+u18[label="18: (\"moduloB_INIT\",BranchNode \"cgijnh\" [0]) [(17,GPR)] []"];
+u19[label="19: (\"moduloB_INIT\",InstructionNode Instruction unintegerG) [] [(20,GPR)]"];
+u21[label="21: CFNode [(\"size\",17),(\"mrIn\",26),(\"mrOut\",38)] [(17,GPR),(26,MemoryRes),(38,MemoryRes)] []"];
+u27[label="27: (\"moduloB_S0\",InstructionNode Instruction vldxMR) [(26,MemoryRes),(24,GPR)] [(28,VR),(29,MemoryRes)]"];
+u31[label="31: (\"moduloB_S0\",InstructionNode Instruction dfm) [(28,VR),(28,VR)] [(32,VR)]"];
+u33[label="33: (\"moduloB_S0\",InstructionNode Instruction dfm) [(32,VR),(32,VR)] [(34,VR)]"];
+u43[label="43: (\"moduloB_LOOPHEAD\",InstructionNode Instruction unintegerG) [] [(44,GPR)]"];
+u45[label="45: (\"moduloB_LOOPHEAD\",InstructionNode Instruction subfG) [(42,GPR),(44,GPR)] [(46,GPR)]"];
+u47[label="47: (\"moduloB_LOOPHEAD\",BranchNode \"cgrjnl\" []) [(41,GPR),(46,GPR)] []"];
+u54[label="54: (\"moduloB_S0S1\",InstructionNode Instruction vldxMR) [(53,MemoryRes),(51,GPR)] [(55,VR),(56,MemoryRes)]"];
+u58[label="58: (\"moduloB_S0S1\",InstructionNode Instruction dfm) [(55,VR),(55,VR)] [(59,VR)]"];
+u60[label="60: (\"moduloB_S0S1\",InstructionNode Instruction dfm) [(59,VR),(59,VR)] [(61,VR)]"];
+u62[label="62: (\"moduloB_S0S1\",InstructionNode Instruction dfm) [(61,VR),(61,VR)] [(63,VR)]"];
+u64[label="64: (\"moduloB_S0S1\",InstructionNode Instruction stvxMR) [(57,MemoryRes),(51,GPR),(63,VR)] [(65,MemoryRes)]"];
+u69[label="69: (\"moduloB_LOOPEND\",InstructionNode Instruction unintegerG) [] [(70,GPR)]"];
+u71[label="71: (\"moduloB_LOOPEND\",InstructionNode Instruction addG) [(68,GPR),(70,GPR)] [(72,GPR)]"];
+u90[label="90: (\"moduloB_S1\",InstructionNode Instruction dfm) [(89,VR),(89,VR)] [(91,VR)]"];
+u92[label="92: (\"moduloB_S1\",InstructionNode Instruction stvxMR) [(85,MemoryRes),(79,GPR),(91,VR)] [(93,MemoryRes)]"];
+u95[label="95: CFNode [(\"size\",80),(\"mrIn\",84),(\"mrOut\",93)] [(80,GPR),(84,MemoryRes),(93,MemoryRes)] []"];
+u18 -> u27[label=""];
+u19 -> u18[label=""];
+u21 -> u19[label=""];
+u27 -> u31[label=""];
+u31 -> u33[label=""];
+u33 -> u43[label=""];
+u43 -> u45[label=""];
+u45 -> u47[label=""];
+u47 -> u54[label=""];
+u47 -> u90[label=""];
+u54 -> u58[label=""];
+u58 -> u60[label=""];
+u60 -> u62[label=""];
+u62 -> u64[label=""];
+u64 -> u69[label=""];
+u69 -> u71[label=""];
+u71 -> u95[label=""];
+u90 -> u92[label=""];
+
+}

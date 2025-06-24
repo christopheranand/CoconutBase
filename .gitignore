@@ -1,0 +1,8 @@
+.stack-work
+problem.c
+.direnv
+dot/*.png
+dot/*.dot
+*.dump-simpl
+dist-newstyle
+*.cabal

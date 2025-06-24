@@ -1,0 +1,277 @@
+#+TITLE: Coconut Road Map
+
+* DONE Make a better Adapter interface
+  CLOSED: [2022-02-22 Tue 10:59]
+** DONE Remove Output dependency in Adapter
+** DONE Add CGOutput to reduce Adapter instances
+   Why was this necessary?
+   Say i try and create adapter instances
+   #+BEGIN_SRC haskell :results value
+   instance (Unwrappable h a,Unwrappable h b) => Adapter h a b where
+     type AdaptedIn h a b = a
+     type AdaptedOut h a b = b
+   
+     adapt = id
+   
+   instance (Unwrappable h a,Unwrappable h b,Unwrappable h c)
+            => Adapter h a (b -> c) where
+     type AdaptedIn h a (b -> c) = (a,b)
+     type AdaptedOut h a (b -> c) = c
+   
+     adapt f (x,y) = f x y
+   
+    ...
+   #+END_SRC
+   This doesn't work because the first instance has overlapping type families
+   with the second (ok with type classes, big no-no for open type families).
+   
+   Remember function application associates to the right. So it does work if we
+   make the last operand a concrete type like
+   #+BEGIN_SRC haskell :results value
+   instance (Unwrappable h a) => Adapter h a (Graph h n0) where
+     type AdaptedIn h a (Graph h n0) = a
+     type AdaptedOut h a (Graph h n0) = (Graph h n0)
+   
+     adapt = id
+   
+   instance (Unwrappable h a,Unwrappable h b)
+            => Adapter h a (b -> (Graph h n0)) where
+     type AdaptedIn h a (b -> (Graph h n0)) = (a,b)
+     type AdaptedOut h a (b -> (Graph h n0)) = (Graph h n0)
+   
+     adapt f (x,y) = f x y
+   
+    ...
+   #+END_SRC
+   But now I'm stuck enumerating all the different tuple outputs for Graph and Interp!
+
+** DONE Remove type parameter h from Adapter
+   This might an unfortunate necessity
+** DONE Add all appropriate Adapter instances
+   CLOSED: [2022-02-23 Wed 11:04]
+* DONE Implement Conditional Register Instructions
+  CLOSED: [2022-03-21 Mon 10:59]
+** DONE Add cmpGPR and cmpVR to CoreISA
+   CLOSED: [2021-10-20 Wed 21:03]
+** DONE Add Interp instance for cmpGPR and cmpVR
+   CLOSED: [2021-10-20 Wed 21:04]
+** DONE Implement Graph instance for cmpGPR and cmpVR
+   CLOSED: [2021-11-18 Thu 14:58]
+** DONE Implement real compare instructions for Z
+   CLOSED: [2022-03-21 Mon 10:59]
+* DONE Implement Control Flow Interface 
+  CLOSED: [2022-03-21 Mon 10:59]
+** DONE Implement doWhileCFA
+** DONE Implement ifCFA
+   CLOSED: [2021-12-09 Thu 12:29]
+** DONE Replace underlying Hypergraph (with tree or fgl?)
+   CLOSED: [2022-02-22 Tue 10:59]
+   [[https://www.sciencedirect.com/science/article/pii/S1571066106001289][Possibly use Control-Flow Graph based on Huet's Zipper?]]
+
+** DONE where to insert jump instructions? they have no input/output don't belong in data flow graph?
+   CLOSED: [2022-03-11 Fri 02:15]
+** DONE add modulo scheduling control flow
+   CLOSED: [2022-03-11 Fri 02:15]
+* TODO Implement Code Generation (i.e. Printer)
+** TODO ask Robert about using alignment hint?
+* TODO Implement Register Allocator 
+** DONE add global chiatin-briggs allocation
+   CLOSED: [2022-02-22 Tue 11:01]
+** DONE add support for loops in ScheduledGraph generation
+   CLOSED: [2022-02-23 Wed 10:34]
+** TODO add extra coalesce pass
+** DONE add real briggs heuristic to avoid spilling
+   CLOSED: [2022-05-28 Sat 18:29]
+** DONE add support for verims
+   CLOSED: [2022-03-11 Fri 02:15]
+** TODO add spilling
+** DONE add the correct amount of registers in regColors
+   CLOSED: [2022-05-28 Sat 18:29]
+** DONE MR's need to be mapped to GPR's (and map inputs/outputs like verims)
+   CLOSED: [2022-03-11 Fri 02:18]
+** DONE collect constants (undwrds) to put in .data section
+   CLOSED: [2022-03-21 Mon 10:59]
+  - we can use one pointer for constant region, including displacement in table
+  - we can interleave tables (our offset vector will multiply by two for two
+    tables, then shift by a displacement to control which table we access)
+* DONE Port Scheduler to use ControlFlow
+  CLOSED: [2022-03-21 Mon 10:59]
+* TODO Port old MASS functions
+** TODO implement modulo scheduling
+** TODO map incMR to proper instruction
+* TODO Implement the rest of Core MetaData
+* TODO Implement CodeGraph Interp
+* TODO Adjust assembly header for modulo code
+** TODO replace llgf with llgfr?
+** TODO vlbb allows use to load data without adjusting for size
+* TODO Better debugging
+** DONE add strings to inputs/outputs dataflow graph
+   CLOSED: [2022-03-11 Fri 02:18]
+** TODO add tag function
+* TODO add new vector load instruction?
+* DONE handle MR in register allocator
+  CLOSED: [2022-05-28 Sat 18:28]
+** DONE generate tables for initMR 
+   CLOSED: [2022-03-11 Fri 02:20]
+** DONE assign initMR to larl in codegen (need to add to CoreMetaData?)
+   CLOSED: [2022-03-21 Mon 11:00]
+* TODO add agfi (sgfi exist?)
+  need to handle register overwriting
+* TODO change modulo block counter to decrement?
+* DONE fix input/output registers in register allocation?
+  CLOSED: [2022-05-28 Sat 18:27]
+* TODO Tune HashedSchedule for Register Allocation
+** TODO when re materializing, reconstruct overwrites list
+** TODO are constant loads and verims getting the same dispatch times?
+   Maybe write constraint to push instructions the are consumed by an
+   instruction that also consumes a constant load away from that constant load
+* TODO Add Multiple Stages
+** Unstaged 2
+#+BEGIN_EXAMPLE
+for i in range(0,n):
+    S0[i]
+    S1[i]
+    S2[i]
+#+END_EXAMPLE
+** 2 Stages
+#+BEGIN_EXAMPLE
+-- Prologue
+S0[0]
+
+for i in range(0,n-1):
+-- Kernel
+    S0[i+1] ; S1[i]
+
+-- Epilogue
+S1[n]
+#+END_EXAMPLE
+
+** Unstaged 3
+#+BEGIN_EXAMPLE
+for i in range(0,n):
+    S0[i]
+    S1[i]
+    S2[i]
+#+END_EXAMPLE
+** 3 Stages
+#+BEGIN_EXAMPLE
+-- Prologue
+S0[0]
+S1[0]
+if n <= 1
+  goto epilogue(n)
+S0[1]
+if n <= 2
+  goto epilogue(n-1)
+for i in range(0,n-2):
+-- Kernel
+    S0[i+2] ; S1[i+1] ; S2[i]
+-- epilogue(n-1)
+S2[n-1]
+-- epilogue (n)
+S1[n]
+S2[n]
+#+END_EXAMPLE
+
+
+Need to label inputs/outputs by stage?
+
+Prologue -> Kernel Ties
+S1[0] -> S2[i]
+S0[1] -> S1[i+1]
+
+Kernel -> Kernel Ties
+S0[i+2] -> S1[i+1]
+S1[i+1] -> S2[i]
+
+Kernel -> Epilogue Ties
+S0[i+2] -> S1[n]
+S1[i+1] -> S2[n-1]
+
+* Notes
+** Trouble getting a unified DataFlow and ControlFlow interface
+*** Old data flow interface
+   * used to have to separate builders, CGMState (to build data flow graph) and
+     CGFState (to build control flow graph)
+   * The old type
+     #+BEGIN_SRC haskell :results value
+     data Graph h a = Graph { genGraph :: CGMState (ResType h) (EL h) UniqueNodeIndex }
+     #+END_SRC
+     was used to build a composable data flow DSL (*NOTE* CGMState returns a
+     single UniqueNodeIndex corresponding to the most recently created output
+     node in the data flow graph)
+     #+BEGIN_SRC haskell :results value
+     class CoreISA repr where
+       vs :: repr VR -> repr VR -> repr VR
+       incMR :: repr MR -> repr GPR -> (repr GPR,repr MR)
+     
+     
+     instance CoreISA (Graph h) where
+       vs :: Graph h VR -> Graph h VR -> Graph h VR
+       ...
+       incMR :: Graph h MR -> Graph h GPR -> (Graph h GPR,Graph h MR)
+       ...
+     #+END_SRC
+     
+     *NOTE* that multiple outputs are given as tuples with Graph inside the tuple
+*** What we want out of a control flow interface 
+   * CGFState would need to build a data flow graph (previously just called
+     CodeGraph) by running  *cgFrom* which would return a CodeGraph
+   * We want a type safe ControlFlow interface, this would mean we want types
+     like
+     #+BEGIN_SRC haskell :results value
+     class ControlISA repr where
+       compose :: repr (a,b) -> repr (b,c) -> repr (a,c)
+       branch :: repr (a,CR) -> repr (a,c) -> repr (a,c)
+       ...
+     #+END_SRC
+     *NOTE* the type variables a,b,c should represent a pair of (input,output)
+     types of a data flow graph. These types should be something like (GPR,MR)
+     NOT (Graph h GPR,Graph h MR)
+
+     And ideally the type parameter repr should be the same as the instance for
+     CoreISA
+*** Problem with combining ControlFlow and DataFlow Interface
+    We create a single State monad for building both data flow and control flow
+    graphs, and reassign Graph to
+    #+BEGIN_SRC haskell :results value
+    newtype Graph h a = Graph { genGraph :: CGBState h Node }
+    #+END_SRC
+    * CGBState here has all the data required for building both data and control flow
+    * In order to have a unified interface, we need some way to take functions
+      of types
+    #+BEGIN_SRC haskell :results value
+    dataFlow :: Graph h VR -> Graph h MR -> (Graph h GPR,Graph h MR)
+    ...
+    #+END_SRC
+    and convert them to
+    #+BEGIN_SRC haskell :results value
+    basicBlock :: Graph h ((VR,MR),(GPR,MR))
+    basicBlock  = toBasicBlock dataFlow
+    #+END_SRC
+    * OR we supply the inputs for the graph, in which case we only need to have
+      a function that takes tuples, i.e.
+    #+BEGIN_SRC haskell :results value
+    dataFlow :: Graph h VR -> Graph h MR -> (Graph h GPR,Graph h MR)
+    ...
+    
+    basicBlock :: Graph h ((VR,MR),(GPR,MR)
+    basicBlock = let
+         mr = ldMR 0
+         vr = createVR 
+      in toBasicBlock (vr,mr) (dataFlow vr mr) 
+    #+END_SRC
+    * Need some way to pull the phantom types out
+
+
+
+    
+* LocalWords
+#  LocalWords:  TODO CoconutZ CoconutPower ZPrinter ZCodeGraph ZInterp ZType hs
+#  LocalWords:  CoreISA Interp CodeGraph CodeGen MeetJoin CoconutHyperGraph ok
+#  LocalWords:  Taggable ZHardware ZScheduler createCG RegType cmpGPR cmpVR fgl
+#  LocalWords:  doWhileCFA ifCFA CGOutput LocalWords ControlFlow MetaData MR's
+#  LocalWords:  codegen Hypergraph UniqueNodeIndex CGMState CGFState cgFrom GPR
+#  LocalWords:  DataFlow CGBState verims ScheduledGraph briggs regColors GPR's
+#  LocalWords:  chiatin dataflow llgfr vlbb initMR larl CoreMetaData undwrds
+#  LocalWords:  llgf HashedSchedule Unstaged
