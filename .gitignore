@@ -6,3 +6,4 @@ dot/*.dot
 *.dump-simpl
 dist-newstyle
 *.cabal
+**.DS_Store
